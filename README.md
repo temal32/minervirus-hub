@@ -5,4 +5,4 @@ If you also uninstall the virus with the help of this tool, there will be no per
 (Use on your own risk)
 
 # Download
-Release: 
+Release: https://github.com/temal32/minervirus-hub/releases/tag/1.0
